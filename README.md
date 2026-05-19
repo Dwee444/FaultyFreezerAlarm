@@ -32,7 +32,8 @@ This repository contains the source code and documentation for a critical teleme
 **▰** TinyGSM (Seamless handling of AT commands and communication with the SIMCom modem).
 
 
-<img width="1377" height="632" alt="WiringSchemeV2" src="https://github.com/user-attachments/assets/7921b112-37d0-4b59-90df-5a7877a44f15" />
+<img width="1292" height="537" alt="WiringSchemeV3" src="https://github.com/user-attachments/assets/d34e532f-e3bc-46dd-a519-80a43b603646" />
+
 
 
 
