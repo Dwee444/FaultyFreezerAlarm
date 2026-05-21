@@ -30,4 +30,3 @@ Ce projet consiste en la conception, la saisie du schéma et le routage d'un cir
 ## 👤 Auteur
 **Robin Paniagua Desclaux**
 *Étudiant en BTS CIEL ER (1ère année)*
-Ton message s'est arrêté net après le mot "expliquant" : quelles sont les fonctionnalités exactes ou le but de ta carte pour que je puisse t'aider à rédiger la section description sur mesure ?
