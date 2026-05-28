@@ -4,7 +4,7 @@
 #include <Adafruit_MAX31865.h>
 #include <Adafruit_GFX.h>       
 #include <Adafruit_SSD1306.h>   
-#include <driver/rtc_io.h> // Requis pour piloter les résistances du domaine RTC en sommeil
+#include <driver/rtc_io.h>
 
 // - - - - - [ BUFFER & TINYGSM CONFIGURATION ] - - - - -
 #define TINY_GSM_RX_BUFFER 1024 
@@ -60,7 +60,7 @@ RTC_DATA_ATTR int currentMenuInt = 0;
 // - - - - - [ DEEP SLEEP TIME CONFIGURATION ] - - - - -
 #define TIME_TO_SLEEP  60  // Durée du sommeil en mode passif (Seconds)
 
-// Volatile variables (lost at each deep sleep cycle)
+// - - - - - [ VOLATILE VARIABLES ] - - - - -
 float currentTemperature = 0.0;
 float currentBatteryVoltage = 4.0; 
 bool isProbeFaulty = false;
@@ -72,6 +72,7 @@ bool isAlertModeActive = false;
 unsigned long lastActionTime = 0;
 const unsigned long SCREEN_TIMEOUT = 15000; 
 
+// - - - - - [ PHONE NUMBERS ] - - - - -
 const char* ALERT_NUMBERS[] = {
   "+33000000000", 
   "+33000000000", 
@@ -207,7 +208,6 @@ void readProbe() {
 }
 
 void setup() {
-  // CORRECTIF 1 : Libérer immédiatement le loquet de la broche BAT_EN appliqué pendant la veille
   gpio_hold_dis((gpio_num_t)BAT_EN);
 
   Serial.begin(115200);
@@ -240,7 +240,7 @@ void setup() {
     lowBatteryAlertTriggered = false;
   }
 
-  // --- CHECK FOR TEMPERATURE ANOMALIES ---
+// - - - - - [ ANOMALY CHECK ] - - - - -
   bool anomalyDetected = false;
   if (!isProbeFaulty) {
     if (currentTemperature < TOO_COLD_THRESHOLD || currentTemperature > TOO_HOT_THRESHOLD || currentTemperature > CRITICAL_THRESHOLD) {
@@ -474,28 +474,23 @@ void enterDeepSleep() {
   turnOffModem(); 
   Wire.end();          
 
-  // CORRECTIF 2 : Maintenir fermement la ligne BAT_EN à LOW via le loquet matériel RTC 
-  // Cela empêche le modem de s'agiter électriquement et de polluer les broches voisines pendant le sommeil
   pinMode(BAT_EN, OUTPUT);
   digitalWrite(BAT_EN, LOW);
   gpio_hold_en((gpio_num_t)BAT_EN);
   gpio_deep_sleep_hold_en();
-
-  // CORRECTIF 3 : Activer explicitement la résistance Pull-Up matérielle du domaine RTC sur le bouton.
-  // Cela l'empêche de devenir "flottant" lorsque le processeur principal s'éteint.
+  
   rtc_gpio_init((gpio_num_t)BUTTON_PIN);
   rtc_gpio_set_direction((gpio_num_t)BUTTON_PIN, RTC_GPIO_MODE_INPUT_ONLY);
   rtc_gpio_pullup_en((gpio_num_t)BUTTON_PIN);
   rtc_gpio_pulldown_dis((gpio_num_t)BUTTON_PIN);
 
-  // Configuration des deux sources de réveil valides
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * 1000000ULL);
-  esp_sleep_enable_ext0_wakeup((gpio_num_t)BUTTON_PIN, 0); // Réveil uniquement sur un vrai niveau BAS stabilisé
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)BUTTON_PIN, 0);
   
   Serial.println("[MONITOR - ECO] Halting processor core. System entering Deep Sleep.\n");
   Serial.flush();
   
-  delay(100); // Petit délai de sécurité pour laisser les tensions transitoires se stabiliser
+  delay(100);
   esp_deep_sleep_start();
 }
 
